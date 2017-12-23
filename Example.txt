@@ -1,0 +1,22 @@
+/**
+ * Sets up an audio stream from the given byte array, and gets it to convert itself to PCM
+ * data for writing to our output line (if it isn't already that)
+ */
+public static AudioInputStream setupAudioStream (InputStream in)
+    throws UnsupportedAudioFileException, IOException
+{
+    AudioInputStream stream = AudioSystem.getAudioInputStream(in);
+    AudioFormat format = stream.getFormat();
+    if (format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
+        stream = AudioSystem.getAudioInputStream(
+            new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+                            format.getSampleRate(),
+                            16,
+                            format.getChannels(),
+                            format.getChannels() * 2,
+                            format.getSampleRate(),
+                            false), stream);
+    }
+
+    return stream;
+}
