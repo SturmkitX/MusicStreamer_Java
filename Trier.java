@@ -39,15 +39,9 @@ public class Trier {
             ardOut = arduino.getOutputStream();
 
             while(!stream_ended) {
-                //ardIn.read(command, 0, 1);
-                // switch(command[0]) {
-                    // case 32 : arduino.readBytes(sent_len, 1); /*System.out.println("Listening for chunks " + sent_len[0]);*/ break;
-                    // case 33 : /*System.out.println("Ready to play");*/ continue;
-                    // case 34 : /*System.out.println("Song is playing");*/ continue;
-                    // case 35 : /*System.out.println("Receiving a byte");*/ continue;
-                // }*/
+                ardIn.read(command, 0, 1);
 
-                //System.out.println("Available: " + stream.available());
+                System.out.println("Available: " + stream.available());
                 if((audio_bytes_read = stream.read(content, 0, 64)) < 64) {
                     stream_ended = true;
                 }
@@ -56,19 +50,8 @@ public class Trier {
                 for(int i=audio_bytes_read; i<64; i++) {
                     content[i] = 0;
                 }
-                //System.out.println("Sending chunk of data");
-                //ardOut.write(content, 0, 64);
-                //System.out.println(bytes_sent);
 
-                for(int i=0; i<10; i++) {
-                    content[i] = (byte)i;
-                }
-                ardOut.write(content, 0, 10);
-                for(int i=0; i<10; i++) {
-                    ardIn.read(command, 0, 1);
-                    System.out.print(command + " ");
-                }
-                System.out.println();
+                ardOut.write(content, 0, 64);
             }
 
             stream.close();

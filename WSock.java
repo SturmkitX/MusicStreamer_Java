@@ -17,8 +17,12 @@ public class WSock {
     private InputStream in;
     private OutputStream out;
 
-    private Socket connectWireless(String address) throws Exception {
-        return new Socket(address, 5678);
+    private Socket connectWireless(String address, int port) throws Exception {
+        Socket x = new Socket(address, port);
+        in = x.getInputStream();
+        out = x.getOutputStream();
+
+        return x;
     }
 
     private void playMusic(String filename) {
@@ -30,36 +34,43 @@ public class WSock {
             byte[] command = new byte[32];
             int audio_bytes_read;
 
-            in = sock.getInputStream();
-            out = sock.getOutputStream();
+
+            content[0] = 65;
+            content[1] = 66;
+            content[2] = 67;
+            content[3] = 68;
+            content[4] = 69;
 
             while(!stream_ended) {
-                in.read(command, 0, 10);
+                in.read(command, 0, 5);
 
-                //System.out.println("Available: " + stream.available());
-                if((audio_bytes_read = stream.read(content, 0, 4096)) < 4096) {
+                if((audio_bytes_read = stream.read(content, 5, 3072)) < 3072) {
                     stream_ended = true;
                 }
 
-                // in case there are less than 64 bytes of data left in the song, pad the rest of the array with 0's
-                for(int i=audio_bytes_read; i<4096; i++) {
+                for(int i=audio_bytes_read + 5; i<3077; i++) {
                     content[i] = 0;
                 }
-                //System.out.println("Sending chunk of data");
-                //ardOut.write(content, 0, 64);
-                //System.out.println(bytes_sent);
 
-                out.write(content, 0, 4096);
-                System.out.println();
+                out.write(content, 0, 3077);
+                // System.out.println();
             }
 
             stream.close();
-            in.close();
-            out.close();
-            sock.close();
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendExitSignal() throws Exception {
+        out.write(new String("QUITS").getBytes());
+        in.close();
+        out.close();
+        sock.close();
+    }
+
+    private void sendReadySignal() throws Exception {
+        out.write(new String("READY").getBytes());
     }
 
     public void run() {
@@ -71,12 +82,17 @@ public class WSock {
             String[] tokens = choice.split(" ");
             switch(tokens[0]) {
                 case "connect": try {
-                    sock = connectWireless(tokens[1]);
+                    sock = connectWireless(tokens[1], Integer.parseInt(tokens[2]));
+                    sendReadySignal();
                 } catch(Exception e) {
                     e.printStackTrace();
                 }; break;
                 case "play": playMusic(tokens[1]); break;
-                case "exit": should_exit = true;
+                case "exit": try {
+                    sendExitSignal(); should_exit = true;
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
