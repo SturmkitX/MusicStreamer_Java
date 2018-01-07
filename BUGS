@@ -1,0 +1,13 @@
+Java code:
+- ?
+
+Arduino code:
+- not synchronized with the java code
+- in the loop code, you get the +PID that comes asynchronously from the client (when the client randomly sends a message)
+the problem is that the chunks are received inside the sendCommand? function, so their data is lost and the music buffer is never filled
+this thing should be treated separately
+
+Some things to mention:
+On chinese Arduino Megas, the RX1 and TX1 pins are printed in reverse order on the board
+The 0C2A pin used for PWM manipulation in the PCM algorithm is on digital pin 11 on Uno, but pin 10 on Mega
+

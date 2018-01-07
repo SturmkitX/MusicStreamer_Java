@@ -44,15 +44,15 @@ public class WSock {
             while(!stream_ended) {
                 in.read(command, 0, 5);
 
-                if((audio_bytes_read = stream.read(content, 5, 3072)) < 3072) {
+                if((audio_bytes_read = stream.read(content, 5, 1024)) < 1024) {
                     stream_ended = true;
                 }
 
-                for(int i=audio_bytes_read + 5; i<3077; i++) {
+                for(int i=audio_bytes_read + 5; i<1029; i++) {
                     content[i] = 0;
                 }
 
-                out.write(content, 0, 3077);
+                out.write(content, 0, 1029);
                 // System.out.println();
             }
 
