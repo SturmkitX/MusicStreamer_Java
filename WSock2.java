@@ -7,7 +7,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import java.net.Socket;
 
-public class WSock {
+public class WSock2 {
 
     private Scanner sc;
     private AudioInputStream stream;
@@ -34,32 +34,21 @@ public class WSock {
             byte[] command = new byte[32];
             int audio_bytes_read;
 
-
-            content[0] = 65;
-            content[1] = 66;
-            content[2] = 67;
-            content[3] = 68;
-            content[4] = 69;
+            out.write(content, 0, 256);
 
             while(!stream_ended) {
-                in.read(command, 0, 5);
-                System.out.println("Received command: " + new String(command));
+                in.read(command, 0, 7);
+                System.out.print("Received command: " + new String(command));
 
-                if((audio_bytes_read = stream.read(content, 5, 256)) < 256) {
+                if((audio_bytes_read = stream.read(content, 0, 256)) < 256) {
                     stream_ended = true;
                 }
 
-                for(int i=audio_bytes_read + 5; i<261; i++) {
+                for(int i=audio_bytes_read; i<256; i++) {
                     content[i] = 0;
                 }
 
-                content[261] = 65;
-                content[262] = 66;
-                content[263] = 67;
-                content[264] = 68;
-                content[265] = 70;
-
-                out.write(content, 0, 266);
+                out.write(content, 0, 256);
                 // System.out.println();
             }
 
@@ -90,13 +79,14 @@ public class WSock {
             switch(tokens[0]) {
                 case "connect": try {
                     sock = connectWireless(tokens[1], Integer.parseInt(tokens[2]));
-                    sendReadySignal();
+                    // sendReadySignal();
                 } catch(Exception e) {
                     e.printStackTrace();
                 }; break;
                 case "play": playMusic(tokens[1]); break;
                 case "exit": try {
-                    sendExitSignal(); should_exit = true;
+                    // sendExitSignal();
+                    should_exit = true;
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -105,7 +95,7 @@ public class WSock {
     }
 
     public static void main(String[] args) {
-        WSock t = new WSock();
+        WSock2 t = new WSock2();
         t.run();
     }
 }
