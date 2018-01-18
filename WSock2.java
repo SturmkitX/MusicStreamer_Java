@@ -27,28 +27,53 @@ public class WSock2 {
 
     private void playMusic(String filename) {
         try {
-            stream = AudioSystem.getAudioInputStream(new File(filename));
-            format = stream.getFormat();
+            File filepath = new File(filename);
+            // stream = AudioSystem.getAudioInputStream(AudioFormat.Encoding.PCM_UNSIGNED, AudioSystem.getAudioInputStream(filepath));
+            // // stream = AudioSystem.getAudioInputStream(filepath);
+            // format = stream.getFormat();
+            // File file = new File("filename.mp3");
+            AudioInputStream in = AudioSystem.getAudioInputStream(filepath);
+            AudioInputStream stream = null;
+            AudioFormat baseFormat = in.getFormat();
+            AudioFormat decodedFormat =
+                new AudioFormat(AudioFormat.Encoding.PCM_UNSIGNED,
+                                8000,
+                                8,
+                                1,
+                                1,
+                                8000,
+                                false);
+            stream = AudioSystem.getAudioInputStream(decodedFormat, in);
+
             byte[] content = new byte[4096];
             boolean stream_ended = false;
             byte[] command = new byte[32];
             int audio_bytes_read;
 
-            out.write(content, 0, 256);
+            // get the author and name of song
+            // 0 = author, 1 = song name
+            String songInfo = filepath.getName();
+            while(songInfo.length() < 32) {
+                songInfo += ".";
+            }
+            String finalInfo = "<new>" + songInfo;
+            byte[] infoBytes = finalInfo.getBytes();
+
+            out.write(infoBytes);
 
             while(!stream_ended) {
                 in.read(command, 0, 7);
                 System.out.print("Received command: " + new String(command));
 
-                if((audio_bytes_read = stream.read(content, 0, 256)) < 256) {
+                if((audio_bytes_read = stream.read(content, 0, 1000)) < 1000) {
                     stream_ended = true;
                 }
 
-                for(int i=audio_bytes_read; i<256; i++) {
+                for(int i=audio_bytes_read; i<1000; i++) {
                     content[i] = 0;
                 }
 
-                out.write(content, 0, 256);
+                out.write(content, 0, 1000);
                 // System.out.println();
             }
 
@@ -87,6 +112,12 @@ public class WSock2 {
                 case "exit": try {
                     // sendExitSignal();
                     should_exit = true;
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }; break;
+                case "test": try {
+                    sock = connectWireless("192.168.4.1", 5678);
+                    playMusic("muxed.wav");
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
